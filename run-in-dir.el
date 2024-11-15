@@ -29,13 +29,25 @@
 
 (require 'savehist)
 
-(defvar-local run-in-dir-directory nil
-  "This variable can be configured to set the default directory directory.")
+
+;;; Customization
+
+(defgroup run-in-dir nil
+  "Override the default directory in the next command."
+  :group 'convenience)
+
+(defcustom run-in-dir-directory nil
+  "This variable can be configured to set the default directory directory."
+  :type '(choice directory (const nil))
+  :group 'run-in-dir)
+(make-variable-buffer-local 'run-in-dir-directory)
 
 (defcustom run-in-dir-remember-last-directory t
   "Remember the last used directory in the current buffer."
   :type 'boolean
-  :group 'convenience)
+  :group 'run-in-dir)
+
+;;; Internal stuff
 
 (defvar run-in-dir-histroy nil)
 
@@ -56,6 +68,8 @@
             (interactive)
             (let ((default-directory (or new-dir default-directory)))
               (call-interactively cmd))))))
+
+;;; Commands
 
 ;;;###autoload
 (defun run-in-dir-next-command-prefix (directory)
