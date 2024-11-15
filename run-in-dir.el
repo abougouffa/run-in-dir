@@ -1,8 +1,8 @@
-;;; run-in-dir.el --- Override the `default-directory` in the next command  -*- lexical-binding: t; -*-
+;;; run-in-dir.el --- Override the default directory in the next command  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2024  Abdelhak Bougouffa
 
-;; Author: Abdelhak Bougouffa <abougouffa@fedoraproject.org>
+;; Author: Abdelhak Bougouffa (rot13 "nobhtbhssn@srqbencebwrpg.bet")
 ;; Keywords: convenience
 ;; Version: 0.1
 ;; Package-Requires: ((emacs "28.1"))
@@ -43,7 +43,7 @@
 (add-to-list 'savehist-additional-variables 'run-in-dir-histroy)
 
 (defun run-in-dir--pch ()
-  "Pre-command hook for the command `run-in-dir-directory'."
+  "Pre-command hook for the command `run-in-dir-next-command-prefix'."
   (let ((cmd this-command)
         (new-dir run-in-dir-directory)
         (minibuf-depth (minibuffer-depth)))
@@ -71,7 +71,7 @@
   (message "Run next command in %S -- " (abbreviate-file-name directory)))
 
 ;;;###autoload
-(defalias 'rid-prefix #'run-in-dir-next-command-prefix)
+(defalias 'run-in-dir-prefix #'run-in-dir-next-command-prefix)
 
 
 (provide 'run-in-dir)
