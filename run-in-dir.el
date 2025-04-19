@@ -54,21 +54,6 @@
 ;; Integrate with `savehist-mode'
 (add-to-list 'savehist-additional-variables 'run-in-dir-histroy)
 
-(defun run-in-dir--pch ()
-  "Pre-command hook for the command `run-in-dir-next-command-prefix'."
-  (let ((cmd this-command)
-        (new-dir run-in-dir-directory)
-        (minibuf-depth (minibuffer-depth)))
-    (unless (> (minibuffer-depth) minibuf-depth) ; until leaving the minibuffer
-      (remove-hook 'pre-command-hook #'run-in-dir--pch))
-    (unless run-in-dir-remember-last-directory
-      (setq run-in-dir-directory nil))
-    (setq this-command
-          (lambda ()
-            (interactive)
-            (let ((default-directory (or new-dir default-directory)))
-              (call-interactively cmd))))))
-
 ;;; Commands
 
 ;;;###autoload
@@ -78,11 +63,21 @@
                          (setq run-in-dir-directory
                                (read-directory-name "Select a `default-directory': "))
                        run-in-dir-directory)))
-  (prefix-command-preserve-state)
-  (setq run-in-dir-directory directory)
-  (add-to-history 'run-in-dir-histroy run-in-dir-directory)
-  (add-hook 'pre-command-hook #'run-in-dir--pch)
-  (message "Run next command in %S -- " (abbreviate-file-name directory)))
+  (when-let* ((command (key-binding
+                        (read-key-sequence
+                         (format "Run next command in %S -- " (abbreviate-file-name directory)))
+                        t)))
+    (let ((project-aware
+           (or (string-match-p (rx bol (or "project-" "projection-")) (symbol-name command))
+               (get command 'project-aware)))
+          (root (if otpp-override-mode default-directory (otpp-get-tab-root-dir))))
+      (when otpp-verbose (message "otpp: Running `%s' with `otpp-prefix'" command))
+      (let ((default-directory root)
+            (project-current-directory-override (if project-aware directory project-current-directory-override)))
+        (when run-in-dir-remember-last-directory
+          (setq run-in-dir-directory directory))
+        (add-to-history 'run-in-dir-histroy run-in-dir-directory)
+        (call-interactively command)))))
 
 ;;;###autoload
 (defalias 'run-in-dir-prefix #'run-in-dir-next-command-prefix)
